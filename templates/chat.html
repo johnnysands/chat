@@ -15,17 +15,20 @@
 
     <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend" hx-trigger="submit">
         <input type="text" name="message" placeholder="Type your message here..." id="message-input">
-        <button type="submit">Send</button>
+        <button type="submit" id="send-button">Send</button>
     </form>
 
     <script>
         htmx.on('htmx:beforeRequest', function (event) {
-            document.getElementById('chat-messages').innerHTML += '<p>You: ' + document.getElementById('message-input').value + '</p>';
+            var message = document.getElementById('message-input').value;
+            document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">You:</span> ' + message + '</div>';
+            document.getElementById('send-button').disabled = true;
+            document.getElementById('message-input').value = '';
         });
 
         htmx.on('htmx:afterSwap', function (event) {
-            document.getElementById('message-input').value = '';
             document.getElementById('message-input').focus();
+            document.getElementById('send-button').disabled = false;
         });
     </script>
 </body>

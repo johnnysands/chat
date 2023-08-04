@@ -17,7 +17,7 @@ def send_message():
     message = request.form.get("message")
     bandolier.add_user_message(message)
     response = bandolier.run()
-    return f"<p>{response.role}: {response.content}</p>"
+    return f'<div class="chat-message server-message"><span class="username">{response.role}</span>{response.content}</div>'
 
 
 if __name__ == "__main__":

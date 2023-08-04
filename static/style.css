@@ -19,6 +19,23 @@ body {
     background-color: #fff;
 }
 
+.chat-message {
+    margin: 10px 0;
+}
+
+.chat-message .username {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.user-message .username {
+    color: blue;
+}
+
+.server-message .username {
+    color: red;
+}
+
 form {
     display: flex;
     margin-top: 20px;
