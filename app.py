@@ -1,13 +1,16 @@
-from flask import Flask, render_template, request, url_for, session
 from bandolier import Bandolier
+from flask import Flask, render_template, request, url_for, session
 from flask_session import Session  # you need to install this module
+import os
 
 
 app = Flask(__name__)
 
 # Flask session configuration
+with open("secret_key.txt", "r") as file:
+    secret_key = file.read().replace("\n", "")
+app.config["SECRET_KEY"] = secret_key
 app.config["SESSION_TYPE"] = "filesystem"
-app.config["SECRET_KEY"] = "889cee86add812714b96fa96c57ea31024157ad21ced3bc56292c61d"
 Session(app)
 
 

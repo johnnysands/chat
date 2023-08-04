@@ -3,3 +3,4 @@ __pycache__
 *.egg-info
 *.swp
 flask_session
+secret_key.txt
