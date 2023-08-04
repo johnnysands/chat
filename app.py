@@ -18,6 +18,14 @@ def chat():
     return render_template("chat.html", messages=session["messages"])
 
 
+@app.route("/new-chat", methods=["POST"])
+def new_chat():
+    # Clear the chat messages from the session
+    session["messages"] = []
+    session.modified = True
+    return "", 204
+
+
 @app.route("/send-message", methods=["POST"])
 def send_message():
     # initialize bandolier with stored state

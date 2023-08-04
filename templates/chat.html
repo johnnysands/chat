@@ -17,22 +17,31 @@
         {% endfor %}
     </div>
 
-    <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend" hx-trigger="submit">
+    <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend" hx-trigger="submit" id="chat-form">
         <input type="text" name="message" placeholder="Type your message here..." id="message-input">
         <button type="submit" id="send-button">Send</button>
+        <button type="button" id="new-chat-button" hx-post="/new-chat" hx-trigger="click">New Chat</button>
     </form>
 
     <script>
+        // send-button events
         htmx.on('htmx:beforeRequest', function (event) {
-            var message = document.getElementById('message-input').value;
-            document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">user:</span> ' + message + '</div>';
-            document.getElementById('send-button').disabled = true;
-            document.getElementById('message-input').value = '';
+            if (event.target.id == 'chat-form') {
+                var message = document.getElementById('message-input').value;
+                document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">user:</span> ' + message + '</div>';
+                document.getElementById('send-button').disabled = true;
+                document.getElementById('message-input').value = '';
+            }
         });
 
-        htmx.on('htmx:afterSwap', function (event) {
-            document.getElementById('message-input').focus();
-            document.getElementById('send-button').disabled = false;
+
+        htmx.on('htmx:afterRequest', function (event) {
+            if (event.target.id == 'chat-form') {
+                document.getElementById('message-input').focus();
+                document.getElementById('send-button').disabled = false;
+            } else if (event.target.id == 'new-chat-button') {
+                document.getElementById('chat-messages').innerHTML = '';
+            }
         });
     </script>
 </body>
