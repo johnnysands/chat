@@ -1,7 +1,6 @@
 from bandolier import Bandolier
 from flask import Flask, render_template, request, url_for, session
-from flask_session import Session  # you need to install this module
-import os
+from flask_session import Session
 
 
 app = Flask(__name__)
