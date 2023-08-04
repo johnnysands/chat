@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Chat</title>
     <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
@@ -12,10 +13,21 @@
         <!-- Chat messages will go here -->
     </div>
 
-    <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend">
-        <input type="text" name="message" placeholder="Type your message here...">
+    <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend" hx-trigger="submit">
+        <input type="text" name="message" placeholder="Type your message here..." id="message-input">
         <button type="submit">Send</button>
     </form>
+
+    <script>
+        htmx.on('htmx:beforeRequest', function (event) {
+            document.getElementById('chat-messages').innerHTML += '<p>You: ' + document.getElementById('message-input').value + '</p>';
+        });
+
+        htmx.on('htmx:afterSwap', function (event) {
+            document.getElementById('message-input').value = '';
+            document.getElementById('message-input').focus();
+        });
+    </script>
 </body>
 
 </html>
