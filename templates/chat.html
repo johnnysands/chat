@@ -10,7 +10,11 @@
 
 <body>
     <div id="chat-messages">
-        <!-- Chat messages will go here -->
+        {% for message in messages %}
+        <div class="chat-message {{ 'user-message' if message.role == 'user' else 'server-message' }}">
+            <span class="username">{{ message.role }}:</span> {{ message.content }}
+        </div>
+        {% endfor %}
     </div>
 
     <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend" hx-trigger="submit">
@@ -21,7 +25,7 @@
     <script>
         htmx.on('htmx:beforeRequest', function (event) {
             var message = document.getElementById('message-input').value;
-            document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">You:</span> ' + message + '</div>';
+            document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">user:</span> ' + message + '</div>';
             document.getElementById('send-button').disabled = true;
             document.getElementById('message-input').value = '';
         });
