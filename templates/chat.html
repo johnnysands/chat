@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+    <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+</head>
+
+<body>
+    <div id="chat-messages">
+        <!-- Chat messages will go here -->
+    </div>
+
+    <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend">
+        <input type="text" name="message" placeholder="Type your message here...">
+        <button type="submit">Send</button>
+    </form>
+</body>
+
+</html>
