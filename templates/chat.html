@@ -9,38 +9,64 @@
 </head>
 
 <body>
-    <div id="chat-messages">
-        {% for message in messages %}
-        <div class="chat-message {{ 'user-message' if message.role == 'user' else 'server-message' }}">
-            <span class="username">{{ message.role }}:</span> {{ message.content }}
+    <div id="chat-window">
+        <div id="chat-tabs">
+            {% for chat_id in chats %}
+            <div class="chat-tab" id="{{ chat_id }}" hx-get="/retrieve-chat/{{ chat_id }}" hx-trigger="click"
+                hx-target="#chat-messages" hx-swap="innerHTML">
+                {{ chats[chat_id] }}
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+
+        <div id="chat-messages" hx-get="/retrieve-chat/{{ active_chat }}" hx-trigger="load" hx-swap="innerHTML">
+            <!-- Chat messages will be loaded here -->
+        </div>
     </div>
 
     <form hx-post="/send-message" hx-target="#chat-messages" hx-swap="beforeend" hx-trigger="submit" id="chat-form">
+        <input type="hidden" name="chat_id" value="{{ active_chat }}">
         <input type="text" name="message" placeholder="Type your message here..." id="message-input">
         <button type="submit" id="send-button">Send</button>
         <button type="button" id="new-chat-button" hx-post="/new-chat" hx-trigger="click">New Chat</button>
     </form>
 
     <script>
-        // send-button events
+        function scrollToBottom() {
+            var chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
         htmx.on('htmx:beforeRequest', function (event) {
             if (event.target.id == 'chat-form') {
                 var message = document.getElementById('message-input').value;
-                document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">user:</span> ' + message + '</div>';
+                document.getElementById('chat-messages').innerHTML += '<div class="chat-message user-message"><span class="username">user:</span > ' + message + '</div > ';
                 document.getElementById('send-button').disabled = true;
                 document.getElementById('message-input').value = '';
+                scrollToBottom();
             }
         });
-
-
         htmx.on('htmx:afterRequest', function (event) {
             if (event.target.id == 'chat-form') {
-                document.getElementById('message-input').focus();
+                document.getElementById('message-input').value = '';
                 document.getElementById('send-button').disabled = false;
+                scrollToBottom();
             } else if (event.target.id == 'new-chat-button') {
+                var chat_id = event.detail.xhr.responseText;
+                var new_tab = document.createElement('div');
+                new_tab.className = 'chat-tab';
+                new_tab.id = chat_id;
+                new_tab.innerHTML = 'Chat ' + chat_id;
+                new_tab.setAttribute('hx-get', '/retrieve-chat/' + chat_id);
+                new_tab.setAttribute('hx-trigger', 'click');
+                new_tab.setAttribute('hx-target', '#chat-messages');
+                new_tab.setAttribute('hx-swap', 'innerHTML');
+                document.getElementById('chat-tabs').prepend(new_tab);
                 document.getElementById('chat-messages').innerHTML = '';
+            }
+        });
+        htmx.on('htmx:afterSwap', function (event) {
+            if (event.target.id == 'chat-messages') {
+                scrollToBottom();
             }
         });
     </script>

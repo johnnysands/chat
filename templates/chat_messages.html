@@ -1,0 +1,6 @@
+{% for message in messages %}
+<div class="chat-message {{ 'user-message' if message.role == 'user' else 'server-message' }}">
+
+    <span class="username">{{ message.role }}:</span> {{ message.content }}
+</div>
+{% endfor %}

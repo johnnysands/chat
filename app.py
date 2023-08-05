@@ -1,6 +1,7 @@
 from bandolier import Bandolier, annotate_arguments, annotate_description
 from flask import Flask, render_template, request, url_for, session
 from flask_session import Session
+import uuid
 
 
 app = Flask(__name__)
@@ -15,33 +16,81 @@ Session(app)
 
 @app.route("/")
 def chat():
-    if "messages" not in session:
-        session["messages"] = []
+    if "chats" not in session:
+        session["chats"] = {}
+        # TODO using the active chat in the session means accessing the chat
+        # from two tabs simultaneously might exhibit broken behavior.
+        session["active_chat"] = str(uuid.uuid4())
+        session["chats"][session["active_chat"]] = []
+        session["chat_titles"] = {}
+        session.modified = True
 
+    chats = {}
+    chat_titles = session.get("chat_titles", {})  # TODO removeme after migration
+    for chat_id in session["chats"].keys():
+        title = chat_titles.get(chat_id, "Buggy chat")
+        chats[chat_id] = title
+    # TODO chat titles should be sorted by last activity
+
+    return render_template(
+        "chat.html",
+        active_chat=session["active_chat"],
+        chats=chats,
+    )
+
+
+@app.route("/new-chat", methods=["POST"])
+def new_chat():
+    # new chat creates a new active chat id.
+    session["active_chat"] = str(uuid.uuid4())
+    session["chats"][session["active_chat"]] = []
+    session["chat_titles"][session["active_chat"]] = "New chat"
+    session.modified = True
+    return "", 204
+
+
+@app.route("/retrieve-chat/<chat_id>", methods=["GET"])
+def retrieve_chat(chat_id):
     messages = []
-    for m in session["messages"]:
+
+    if chat_id not in session["chats"]:
+        session["chats"][chat_id] = []
+
+    for m in session["chats"][chat_id]:
         # filter out function calls
         if m.content is None:
             continue
         # filter out all other roles
         if m["role"] == "assistant" or m["role"] == "user":
             messages.append(m)
-    return render_template("chat.html", messages=messages)
+    session["active_chat"] = chat_id
+    session.modified = True
+    return render_template("chat_messages.html", messages=messages)
 
 
-@app.route("/new-chat", methods=["POST"])
-def new_chat():
-    # Clear the chat messages from the session
-    session["messages"] = []
+@app.route("/delete-chat", methods=["POST"])
+def delete_chat():
+    # delete the chat id in the form
+    chat_id = request.form.get("chat_id")
+
+    if chat_id == session["active_chat"]:
+        session["active_chat"] = uuid.uuid4()
+        session["chats"][session["active_chat"]] = []
+
+    del session["chats"][chat_id]
+
     session.modified = True
     return "", 204
 
 
 @app.route("/send-message", methods=["POST"])
 def send_message():
-    # initialize bandolier with stored state
+    # get chat_id from form
+    chat_id = request.form.get("chat_id")
+
+    # load bandolier with stored state
     bandolier = Bandolier()
-    bandolier.messages = session["messages"]
+    bandolier.messages = session["chats"][chat_id]
     bandolier.add_function(get_weather)
 
     # process the incoming message
